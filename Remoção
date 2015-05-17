@@ -1,0 +1,89 @@
+bool arvoreAVL::remover(int valor){
+    nodeAvl* pai = NULL;
+    nodeAvl* no = (nodeAvl*)this->raiz;
+    nodeAvl* sucessor = NULL;
+    stack<nodeAvl*> pilha;
+
+    while(no != NULL){
+        pilha.push(no);
+        if(no->valor == valor){
+            break;
+        }else if(valor < no->valor){
+            pai = no;
+            no = (nodeAvl*)no->esq;
+        }else{
+            pai = no;
+            no = (nodeAvl*)no->dir;
+        }
+    }
+    if(no == NULL){
+        cout << " VAZIA " << endl;
+        return false;
+    }
+    else{
+        if(no->esq != NULL && no->dir != NULL){
+            sucessor = (nodeAvl*)getSucessor(no);
+            pai = no;
+            no->valor = sucessor->valor;
+            no = sucessor;
+        }
+        if(no->esq == NULL){
+            if(pai == NULL){
+                this->raiz = no->dir;
+            }else{
+                if(pai->esq == no){
+                    pai->esq = no->dir;
+                }else{
+                    pai->dir = no->dir;
+                }
+            }
+        }
+        else if(no->dir == NULL){
+            if(pai == NULL){
+                this->raiz = no->esq;
+            }
+            else{
+                if(pai->esq == no){
+                    pai->esq = no->esq;
+                }
+                else{
+                    pai->dir = no->esq;
+                }
+            }
+        }
+
+        delete no;
+        verificarBal(pilha);
+        return true;
+    }
+
+}
+
+
+void arvoreAVL::verificarBal(stack<nodeAvl*> pilha){
+    nodeAvl* node = pilha.top();
+    pilha.pop();
+    int balanco = node->bal;
+    if(balanco == -2){
+        if(getAltura(node->esq->esq->valor) >= getAltura(node->esq->dir->valor)){
+            node = rotSimplesDir(node);
+        }else{
+            node = rotDuplaDir(node);
+        }
+    }else if (balanco == 2) {
+        if(getAltura(node->dir->dir->valor) >= getAltura(node->dir->esq->valor)){
+            node = rotSimplesDir(node);
+        }else{
+            node = rotDuplaEsq(node);
+        }
+    }
+    if(!pilha.empty()){
+        nodeAvl* pai = pilha.top();
+        pilha.pop();
+        if(pai != NULL){
+            verificarBal(pilha);
+        }else{
+            this->raiz = node;
+        }
+    }
+}
